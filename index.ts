@@ -9,7 +9,7 @@ dotenv.config()
 const RPC_URL = 'https://eth-goerli.public.blastapi.io'
 const provider = new ethers.providers.JsonRpcProvider(RPC_URL)
 
-// Initialize signers
+// Initialize signer(s) here
 const owner1Signer = new ethers.Wallet(process.env.OWNER_1_PRIVATE_KEY!, provider)
 
 const ethAdapterOwner1 = new EthersAdapter({
@@ -40,9 +40,11 @@ async function createSafe(): Promise<SafeSdk> {
     }
 
     try {
+        console.log('Deploying Safe...')
         const safeSdkOwner1 = await safeFactory.deploySafe({ safeAccountConfig })
+        console.log('Safe deployed.')
         const safeAddress = await safeSdkOwner1.getAddress()
-        console.log(safeAddress)
+        console.log('Safe address is: ',safeAddress)
         return safeSdkOwner1;
     } catch (error) {
         console.log('Failed to deploy safe:', error)
@@ -60,7 +62,8 @@ async function sendEth(safeSdk: SafeSdk) {
 
     const transactionParameters = {
         to: safeAddress,
-        value: safeAmount
+        value: safeAmount,
+        gasLimit: ethers.utils.hexlify(50000) // Optional, maybe works without this
     }
 
     const tx = await owner1Signer.sendTransaction(transactionParameters)
