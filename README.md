@@ -9,7 +9,7 @@ Create an .env file:
 touch .env
 ```
 
-Put your signing account private keys into the .env file you just created.
+Create 3 signing account private keys (e.g. with MetaMask) and paste them into the .env file you just created.
 ```bash
 export OWNER_1_PRIVATE_KEY='<PRIVATE_KEY>'
 export OWNER_2_PRIVATE_KEY='<PRIVATE_KEY>'

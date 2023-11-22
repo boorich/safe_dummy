@@ -11,14 +11,16 @@ const provider = new ethers.providers.JsonRpcProvider(RPC_URL)
 
 // Initialize signers
 const owner1Signer = new ethers.Wallet(process.env.OWNER_1_PRIVATE_KEY!, provider)
-const owner2Signer = new ethers.Wallet(process.env.OWNER_2_PRIVATE_KEY!, provider)
-const owner3Signer = new ethers.Wallet(process.env.OWNER_3_PRIVATE_KEY!, provider)
 
 const ethAdapterOwner1 = new EthersAdapter({
     ethers,
     signerOrProvider: owner1Signer
 })
-// console.log(ethAdapterOwner1)    
+
+// Define an interface for safeSdk
+interface SafeSdk {
+    getAddress: () => Promise<string>;
+}
 
 async function initAPIKit() {
     const txServiceUrl = 'https://safe-transaction-goerli.safe.global'
@@ -27,35 +29,31 @@ async function initAPIKit() {
     // console.log(safeService)
 }
 
-async function createSafe() {
+async function createSafe(): Promise<SafeSdk> {
     const safeFactory = await SafeFactory.create({ ethAdapter: ethAdapterOwner1 });
     const safeAccountConfig: SafeAccountConfig = {
         owners: [
             await owner1Signer.getAddress(),
-            // await owner2Signer.getAddress(), // optional for testing
-            // await owner3Signer.getAddress() // optional for testing
         ],
         threshold: 1,
         // ... (Optional params)
     }
-    // /* This Safe is tied to owner 1 because the factory was initialized with
-    // an adapter that had owner 1 as the signer. */
+
     try {
-        const safeSdkOwner1 = await safeFactory.deploySafe({ safeAccountConfig }) // this reverts with "cannot estimate gas"
-        // console.log(safeSdkOwner1)
+        const safeSdkOwner1 = await safeFactory.deploySafe({ safeAccountConfig })
         const safeAddress = await safeSdkOwner1.getAddress()
-        console.log(safeAddress)    
+        console.log(safeAddress)
+        return safeSdkOwner1;
     } catch (error) {
         console.log('Failed to deploy safe:', error)
+        throw error;
     }
-
     // console.log('Your Safe has been deployed:')
     // console.log(`https://goerli.etherscan.io/address/${safeAddress}`)
     // console.log(`https://app.safe.global/gor:${safeAddress}`)
 }
 
-async function sendEth(safeSdk: any) {
-
+async function sendEth(safeSdk: SafeSdk) {
     const safeAddress = await safeSdk.getAddress()
 
     const safeAmount = ethers.utils.parseUnits('0.01', 'ether').toHexString()
@@ -71,6 +69,9 @@ async function sendEth(safeSdk: any) {
     console.log(`Deposit Transaction: https://goerli.etherscan.io/tx/${tx.hash}`)
 }
 
-initAPIKit().catch(console.error);
-createSafe().catch(console.error);
-// sendEth(safeService).catch(console.error);
+// Handle promises
+initAPIKit().then(() => {
+    return createSafe();
+}).then((safeSdk) => {
+    return sendEth(safeSdk);
+}).catch(console.error);
