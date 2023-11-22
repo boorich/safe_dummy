@@ -1,41 +1,5 @@
-lib-cov
-*.seed
-*.log
-*.csv
-*.dat
-*.out
-*.pid
-*.gz
-*.swp
+**Integration of the Safe Core SDK**
+https://github.com/safe-global/safe-core-sdk/blob/main/guides/integrating-the-safe-core-sdk.md
 
-pids
-logs
-results
-tmp
-
-# Build
-public/css/main.css
-
-# Coverage reports
-coverage
-
-# API keys and secrets
-.env
-
-# Dependency directory
-node_modules
-bower_components
-
-# Editors
-.idea
-*.iml
-
-# OS metadata
-.DS_Store
-Thumbs.db
-
-# Ignore built ts files
-dist/**/*
-
-# ignore yarn.lock
-yarn.lock
+**Documentation Protocol Kip**
+https://docs.safe.global/safe-core-aa-sdk/protocol-kit
