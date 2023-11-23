@@ -16,6 +16,15 @@ const ethAdapterOwner1 = new EthersAdapter({
     ethers,
     signerOrProvider: owner1Signer
 })
+// log all fields of the adapter
+async function logAdapter() {
+    try {
+        const signerAddress = await ethAdapterOwner1.getSignerAddress();
+        console.log(`Signer address: ${signerAddress}`);
+    } catch (error) {
+        console.error('Failed to get signer address:', error);
+    }
+}
 
 // Define an interface for safeSdk
 interface SafeSdk {
@@ -30,7 +39,7 @@ async function initAPIKit() {
 }
 
 async function createSafe(): Promise<SafeSdk> {
-    const safeFactory = await SafeFactory.create({ ethAdapter: ethAdapterOwner1 });
+    const safeFactory = await SafeFactory.create({ ethAdapter: ethAdapterOwner1 })
     const safeAccountConfig: SafeAccountConfig = {
         owners: [
             await owner1Signer.getAddress(),
@@ -72,9 +81,11 @@ async function sendEth(safeSdk: SafeSdk) {
     console.log(`Deposit Transaction: https://goerli.etherscan.io/tx/${tx.hash}`)
 }
 
+initAPIKit()
+logAdapter()
 // Handle promises
-initAPIKit().then(() => {
-    return createSafe();
-}).then((safeSdk) => {
-    return sendEth(safeSdk);
-}).catch(console.error);
+// initAPIKit().then(() => {
+//     return createSafe();
+// }).then((safeSdk) => {
+//     return sendEth(safeSdk);
+// }).catch(console.error);
