@@ -26,6 +26,12 @@ async function logAdapter() {
     }
 }
 
+// Check if address is a contract
+async function isContractDeployed(address: string): Promise<boolean> {
+    const code = await provider.getCode(address);
+    return code !== "0x";
+}
+
 // Define an interface for safeSdk
 interface SafeSdk {
     getAddress: () => Promise<string>;
@@ -38,7 +44,15 @@ async function initAPIKit() {
     // console.log(safeService)
 }
 
+
 async function createSafe(): Promise<SafeSdk> {
+    const address = "0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2"; // Replace with the address calculated by the CREATE2 opcode
+    const contractExists = await isContractDeployed(address);
+    if (contractExists) {
+        console.log(`A contract already exists at address ${address}`);
+    } else {
+        console.log(`No contract exists at address ${address}`);
+    }
     const safeFactory = await SafeFactory.create({ ethAdapter: ethAdapterOwner1 })
     const safeAccountConfig: SafeAccountConfig = {
         owners: [
@@ -53,7 +67,7 @@ async function createSafe(): Promise<SafeSdk> {
         const safeSdkOwner1 = await safeFactory.deploySafe({ safeAccountConfig })
         console.log('Safe deployed.')
         const safeAddress = await safeSdkOwner1.getAddress()
-        console.log('Safe address is: ',safeAddress)
+        console.log('Safe address is: ', safeAddress)
         return safeSdkOwner1;
     } catch (error) {
         console.log('Failed to deploy safe:', error)
@@ -83,6 +97,7 @@ async function sendEth(safeSdk: SafeSdk) {
 
 initAPIKit()
 logAdapter()
+createSafe()
 // Handle promises
 // initAPIKit().then(() => {
 //     return createSafe();
