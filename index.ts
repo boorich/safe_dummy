@@ -69,38 +69,34 @@ async function initAPIKit() {
 }
 
 
-async function createSafe(): Promise<SafeSdk> {
-    const address = ""; // Replace with the address calculated by the CREATE2 opcode
-    const contractExists = await isContractDeployed(address);
-    if (contractExists) {
+async function createSafe(): Promise<SafeSdk | null> {
+    const address = "0xa6B71E26C5e0845f74c812102Ca7114b6a896A32"; // Replace with the address calculated by the CREATE2 opcode
+    if (await isContractDeployed(address)) {
         console.log(`A contract already exists at address ${address}`);
-    } else {
-        console.log(`No contract exists at address ${address}`);
-    }
-    const safeFactory = await SafeFactory.create({ ethAdapter: ethAdapterOwner1 })
-    const safeAccountConfig: SafeAccountConfig = {
-        owners: [
-            await owner1Signer.getAddress(),
-        ],
-        threshold: 1,
-        // ... (Optional params)
+        return null;
     }
 
+    const safeFactory = await SafeFactory.create({ ethAdapter: ethAdapterOwner1 });
+    const ownerAddress = await owner1Signer.getAddress();
+    const safeAccountConfig: SafeAccountConfig = { owners: [ownerAddress], threshold: 1 };
+
     try {
-        console.log('Deploying Safe...')
-        const safeSdkOwner1 = await safeFactory.deploySafe({ safeAccountConfig })
-        console.log('Safe deployed.')
-        const safeAddress = await safeSdkOwner1.getAddress()
-        console.log('Safe address is: ', safeAddress)
+        console.log('Deploying Safe...');
+        const safeSdkOwner1 = await safeFactory.deploySafe({ safeAccountConfig });
+        const safeAddress = await safeSdkOwner1.getAddress();
+
+        console.log(`Safe deployed at address: ${safeAddress}`);
+        console.log(`View on Etherscan: https://goerli.etherscan.io/address/${safeAddress}`);
+        console.log(`View on Gnosis Safe: https://app.safe.global/gor:${safeAddress}`);
+
         return safeSdkOwner1;
     } catch (error) {
-        console.log('Failed to deploy safe:', error)
-        throw error;
+        console.error('Failed to deploy safe:', error);
+        return null;
     }
-    // console.log('Your Safe has been deployed:')
-    // console.log(`https://goerli.etherscan.io/address/${safeAddress}`)
-    // console.log(`https://app.safe.global/gor:${safeAddress}`)
 }
+
+
 
 async function sendEth(safeSdk: SafeSdk) {
     const safeAddress = await safeSdk.getAddress()
